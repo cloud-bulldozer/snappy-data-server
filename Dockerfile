@@ -10,7 +10,6 @@ ENV APP_ROOT=/data_server
 RUN dnf install -y python38 \
     && ln -s /usr/bin/python3 /usr/bin/python \
     && ln -s /usr/bin/pip3 /usr/bin/pip \
-    && dnf update \
     && dnf clean all \
     && pip install pipenv
 
