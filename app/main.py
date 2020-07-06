@@ -1,5 +1,5 @@
-import os, pathlib, shutil
-import sys
+import os, pathlib
+
 import fastapi as fast
 import environs
 import aiofiles
@@ -62,8 +62,7 @@ async def upload(
             detail = 'File extension not allowed.')
 
     dest = pathlib.Path('/'.join((
-        ROOT_DIR, 
-        'results',
+        RESULTS_DIR,
         file.filename
     )))
     dest.parent.mkdir(parents=True, exist_ok=True)

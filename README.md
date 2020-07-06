@@ -17,13 +17,13 @@ Use the host network, `--net=host`, for traffic to get from a remote client thro
 ```shell
 $ podman run \
     --detach \
-    --name=data_server \
+    --name=snappy \
     --net=host \
     --env DATA_SERVER_PUBLIC_HOST=localhost \
     --env DATA_SERVER_PORT=7070 \
     --env DATA_SERVER_LOG_LVL=info \
     --volume "$HOME/data_server/results:/data_server/app/results:z" \ 
-    quay.io/mleader/fastdata
+    quay.io/openshift-scale/snappy-data-server
 ```
 
 ## Environment Variables
@@ -38,4 +38,4 @@ Service port.
 
 ### DATA_SERVER_LOG_LVL
 Default: `info`  
-Data server log level. Current [Uvicorn server](https://www.uvicorn.org) **options:** *'critical', 'error', 'warning', 'info', 'debug', 'trace'*.
+Data server log level. Current [Uvicorn server](https://www.uvicorn.org) **options:** *'critical', 'error', 'warning', 'info', 'debug', 'trace'.
