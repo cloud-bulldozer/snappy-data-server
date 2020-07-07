@@ -6,6 +6,7 @@ ENV PATH=/root/.local/bin:$PATH \
     PIP_NO_CACHE_DIR=off \
     LANG=C.UTF-8
 ENV APP_ROOT=/data_server
+ENV PIPENV_PYTHON=python
 
 RUN dnf install -y python38 \
     && ln -s /usr/bin/python3 /usr/bin/python \

@@ -1,6 +1,6 @@
 # Data Server
 
-Deploy an [ASGI](https://asgi.readthedocs.io/en/latest/introduction.html) server and api to receive and explore test results.
+Deploy an [ASGI](https://asgi.readthedocs.io/en/latest/introduction.html) server and API to receive and explore test results. When deployed you can access the server's current API at the `/docs` route.
 
 ## Setup
 
@@ -25,6 +25,10 @@ $ podman run \
     --volume "$HOME/data_server/results:/data_server/app/results:z" \ 
     quay.io/openshift-scale/snappy-data-server
 ```
+
+## Example
+
+When run on
 
 ## Environment Variables
 
