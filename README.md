@@ -32,7 +32,7 @@ A simple script to show **snappy** being deployed locally and interacting with i
 
 ```shell
 ./localhost-example
-````
+```
 
 ## Environment Variables
 
