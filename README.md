@@ -4,7 +4,7 @@ Deploy an [ASGI](https://asgi.readthedocs.io/en/latest/introduction.html) server
 
 ## Setup
 
-Create a local directory to store configuration variables and results posted to the data server. Define environment variables below as needed.
+Create a local directory to store data posted to the server's host's file system.
 
 ```shell
 $ mkdir "$HOME/data_server/results" -p
