@@ -1,7 +1,7 @@
 #! /bin/bash
 
 echo "Start the snappy data server"
-podman run \
+container_id=$(podman run \
     --detach \
     --name=snappy \
     --net=host \
@@ -9,21 +9,21 @@ podman run \
     --env DATA_SERVER_PORT=7070 \
     --env DATA_SERVER_LOG_LVL=info \
     --volume "$HOME/data_server/results:/data_server/app/results:z" \
-    quay.io/openshift-scale/snappy-data-server
+    quay.io/openshift-scale/snappy-data-server)
+echo "Server Container id: $container_id"
 sleep 2
 
-FILE=red-hat.jpg
-echo  "Post the file $FILE"
-curl localhost:7070/api --form file=@$FILE
-echo ""
+file=red-hat.jpg
+echo "Post the file $file"
+echo "Server response: $(curl localhost:7070/api --form file=@$file)"
 sleep 2
 
-echo "Validate $FILE is in server storage"
-diff $FILE $HOME/data_server/results/$FILE
+echo "Validate $file is in server storage"
+diff $file $HOME/data_server/results/$file
 if [[ $? == 0 ]]; then
-    echo "$FILE was posted to the server and saved!"
+    echo "$file was posted to the server and saved!"
 fi
 sleep 2
 
 echo "Stopping and removing the snappy data server"
-podman rm -f snappy
+podman rm -f $container_id 1> /dev/null

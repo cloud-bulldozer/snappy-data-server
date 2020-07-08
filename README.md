@@ -28,7 +28,11 @@ $ podman run \
 
 ## Example
 
-When run on
+A simple script to show **snappy** being deployed locally and interacting with it's API.
+
+```shell
+./localhost-example
+````
 
 ## Environment Variables
 
