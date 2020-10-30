@@ -87,17 +87,27 @@ async def results(filename: str):
 async def upload(
     request: fast.Request, 
     file: fast.UploadFile = fast.File(...),
-    user: mdl.User = fast.Depends(api_users.get_current_active_user)):
+    user: mdl.User = fast.Depends(api_users.get_current_active_user),
+    filedir:str = None):
 
     if not file.filename.endswith(VALID_EXTENSIONS):
         raise fast.HTTPException(
             status_code = 400,
             detail = 'File extension not allowed.')
-
-    dest = pathlib.Path('/'.join((
-        RESULTS_DIR,
+    
+    if filedir is not None:
+        NEW_DIR = '/'.join((RESULTS_DIR, filedir))
+        dest = pathlib.Path('/'.join((
+        NEW_DIR,
         pathlib.Path(file.filename).name
-    )))
+        )))
+        
+    else:
+        dest = pathlib.Path('/'.join((
+            RESULTS_DIR,
+            pathlib.Path(file.filename).name
+        )))
+
     dest.parent.mkdir(parents=True, exist_ok=True)
 
     async with aiofiles.open(dest, 'wb') as buffer:
