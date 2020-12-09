@@ -16,7 +16,7 @@ import app.models as mdl
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-RESULTS_DIR = '/'.join((ROOT_DIR, 'results'))
+RESULTS_DIR = pathlib.Path('/'.join((ROOT_DIR, 'results')))
 env = environs.Env()
 env.read_env(recurse=False)
 POSTGRES_PORT = f":{env('POSTGRES_PORT')}" if len(env('POSTGRES_PORT')) else ''
@@ -70,17 +70,14 @@ async def root():
     return star.responses.RedirectResponse(url = '/docs')
 
 
-@app.get('/results/{filename}')
-async def results(filename: str):
-    if not pathlib.Path('/'.join((ROOT_DIR, 'results', filename))).exists():
+@app.get('/results/{filepath:path}')
+async def results(filepath: str):
+    p = RESULTS_DIR.joinpath(filepath)
+    if not p.is_file():
         raise fast.HTTPException(
             status_code = 404,
-            detail = f"{filename} was not found in results.")
-    return fast.responses.FileResponse(
-        path = '/'.join((
-            'results',
-            filename
-        )))   
+            detail = f"{filepath} was not found in results.")
+    return fast.responses.FileResponse(path = p)   
 
 
 @app.post('/api')
@@ -88,26 +85,14 @@ async def upload(
     request: fast.Request, 
     file: fast.UploadFile = fast.File(...),
     user: mdl.User = fast.Depends(api_users.get_current_active_user),
-    filedir:str = None):
+    filedir: str = ''):
 
     if not file.filename.endswith(VALID_EXTENSIONS):
         raise fast.HTTPException(
             status_code = 400,
             detail = 'File extension not allowed.')
     
-    if filedir is not None:
-        NEW_DIR = '/'.join((RESULTS_DIR, filedir))
-        dest = pathlib.Path('/'.join((
-        NEW_DIR,
-        pathlib.Path(file.filename).name
-        )))
-        
-    else:
-        dest = pathlib.Path('/'.join((
-            RESULTS_DIR,
-            pathlib.Path(file.filename).name
-        )))
-
+    dest = RESULTS_DIR.joinpath(filedir, file.filename)
     dest.parent.mkdir(parents=True, exist_ok=True)
 
     async with aiofiles.open(dest, 'wb') as buffer:
@@ -115,7 +100,7 @@ async def upload(
         contents = await file.read()
         await buffer.write(contents)
 
-    return f'{HOST}:{PORT}/results/{dest.name}'
+    return f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
 
 
 app.include_router(
