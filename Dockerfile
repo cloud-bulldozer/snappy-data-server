@@ -1,4 +1,4 @@
-FROM docker.io/library/centos:8.2.2004
+FROM quay.io/fedora/fedora:34
 
 LABEL maintainer="Matthew F Leader <mleader@redhat.com>"
 
@@ -19,10 +19,7 @@ WORKDIR ${APP_ROOT}
 RUN dnf install -y \
         gcc \
         libpq-devel \
-        python38-devel \
-        python38 \
-    && ln -s /usr/bin/python3 /usr/bin/python \
-    && ln -s /usr/bin/pip3 /usr/bin/pip \
+        python3.9-devel \
     && dnf clean all \
     && pip install --requirement requirements.txt
 

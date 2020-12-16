@@ -13,10 +13,10 @@ fastapi = "*"
 fastapi-users = "*"
 python-multipart = "*"
 flask-autoindex = "*"
-uvicorn = "==0.11.7"
 asyncpg = "*"
 psycopg2 = "*"
 tenacity = "*"
+uvicorn = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
