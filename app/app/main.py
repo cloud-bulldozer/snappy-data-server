@@ -25,7 +25,7 @@ HOST = env('DATA_SERVER_PUBLIC_HOST')
 PORT = env('DATA_SERVER_PORT') 
 VALID_EXTENSIONS = (
     '.png', '.jpeg', '.jpg',
-    '.tar.gz', '.tar.xz', '.tar.bz2', '.csv', '.txt', '.json', '.markdown', '.doc', '.docx', '.pdf', '.log', '.xml'
+    '.tar.gz', '.tar.xz', '.tar.bz2', '.csv', '.txt', '.json', '.markdown', '.doc', '.docx', '.pdf', '.log', '.xml', '.yml', '.yaml'
 )
 
 
