@@ -19,8 +19,8 @@ WORKDIR ${APP_ROOT}
 RUN dnf install -y \
         gcc \
         libpq-devel \
-        python3.9-devel \
-    && dnf clean all \
+        python3.9-devel --nogpgcheck \
+    && dnf clean all --nogpgcheck \
     && pip install --requirement requirements.txt
 
 WORKDIR ${APP_ROOT}/app

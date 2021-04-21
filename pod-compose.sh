@@ -37,6 +37,7 @@ podman run \
     --rm \
     $data_server_img ./scripts/prestart
 
+sleep 10s
 
 podman run \
     --detach \

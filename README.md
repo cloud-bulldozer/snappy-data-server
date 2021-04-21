@@ -135,3 +135,17 @@ Username for the first super user.
 
 #### FIRST_SUPERUSER_PASSWORD
 Password for the first super user.
+
+---
+
+### Steps to create and run a new podman image of snappy server: 
+
+Make your changes in the snappy-data-server directory
+
+Run command : sudo podman build --tag name:tag -f ./Dockerfile
+This will create a local podman image 
+
+change the data_server_img var in podman-compose.sh file 
+eg : data_server_img="localhost/name:tag" 
+
+Run : ./podman-compose.sh (This will start the snappy server with any new local changes)
