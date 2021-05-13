@@ -101,6 +101,16 @@ async def upload(
     return f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
 
 
+async def upload_bytes(file, chunk_size=200_000):
+    contents = '_'
+    pointer = 0    
+    while len(contents):
+        await file.seek(pointer)
+        pointer += chunk_size
+        contents = await file.read(chunk_size)
+        yield contents
+
+
 app.include_router(
     api_users.get_auth_router(jwt_authentication),
     prefix = '/auth/jwt',
