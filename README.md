@@ -30,6 +30,57 @@ $ mkdir "$HOME/data_server/results" -p
 
 * The bind mount volume is labeled as a shared directory with the host, `:z`, to persist results and facilitate integration with other tools on the host.
 
+## Environment Variables
+
+Define a `.env` with these environment variables.
+
+### Data Server Configuration
+
+---
+
+#### DATA_SERVER_LOG_LVL
+Default: `info`  
+Data server log level. Current [Uvicorn server](https://www.uvicorn.org) **options:** *'critical', 'error', 'warning', 'info', 'debug', 'trace'.*
+
+#### DATA_SERVER_PORT
+Default: `7070`  
+This application's service port.
+
+#### DATA_SERVER_PUBLIC_HOST
+Default: `localhost`  
+URL to public host of data server.
+
+#### DATA_SERVER_SECRET
+Secret to encode passwords in database.
+
+#### POSTGRES_PORT
+Docker: Empty string  (i.e. `POSTGRES_PORT=`)  
+Podman: `5432`  
+Postgres service port. 
+
+#### POSTGRES_SERVER
+Docker: name of the database network alias, see `docker-compose.sh`.  
+Podman: `localhost`  
+Domain name, or IP address, hosting the postgres service.
+
+### Postgres Service Configuration
+
+---
+
+#### POSTGRES_PASSWORD
+Postgresql database super user password.
+
+### Initial User Configuration
+
+---
+
+#### FIRST_SUPERUSER
+Username for the first super user.
+
+#### FIRST_SUPERUSER_PASSWORD
+Password for the first super user.
+
+
 ### Podman Invocation
 
 Create a `pod-compose.sh` script with:
@@ -85,53 +136,3 @@ podman run \
     --volume "$HOME/data_server/results:/data_server/app/app/results:z" \
     $data_server_img
 ```
-
-## Environment Variables
-
-Define a `.env` with these environment variables.
-
-### Data Server Configuration
-
----
-
-#### DATA_SERVER_LOG_LVL
-Default: `info`  
-Data server log level. Current [Uvicorn server](https://www.uvicorn.org) **options:** *'critical', 'error', 'warning', 'info', 'debug', 'trace'.*
-
-#### DATA_SERVER_PORT
-Default: `7070`  
-This application's service port.
-
-#### DATA_SERVER_PUBLIC_HOST
-Default: `localhost`  
-URL to public host of data server.
-
-#### DATA_SERVER_SECRET
-Secret to encode passwords in database.
-
-#### POSTGRES_PORT
-Docker: Empty string  (i.e. `POSTGRES_PORT=`)  
-Podman: `5432`  
-Postgres service port. 
-
-#### POSTGRES_SERVER
-Docker: name of the database network alias, see `docker-compose.sh`.  
-Podman: `localhost`  
-Domain name, or IP address, hosting the postgres service.
-
-### Postgres Service Configuration
-
----
-
-#### POSTGRES_PASSWORD
-Postgresql database super user password.
-
-### Initial User Configuration
-
----
-
-#### FIRST_SUPERUSER
-Username for the first super user.
-
-#### FIRST_SUPERUSER_PASSWORD
-Password for the first super user.

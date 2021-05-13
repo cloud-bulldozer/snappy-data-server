@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora:34
+FROM docker.io/library/python:3.9.5
 
 LABEL maintainer="Matthew F Leader <mleader@redhat.com>"
 
@@ -16,13 +16,11 @@ WORKDIR ${APP_ROOT}
 # psycopg2 dependencies:
 #   gcc, libpq-devel
 
-RUN dnf install -y \
+RUN apt-get install -y \
         gcc \
-        libpq-devel \
-        python3.9-devel \
-    && dnf clean all \
+        libpq-dev \
     && pip install --requirement requirements.txt
 
 WORKDIR ${APP_ROOT}/app
 
-CMD ["/usr/bin/bash", "./scripts/start"]
+CMD ["/bin/sh", "./scripts/start"]

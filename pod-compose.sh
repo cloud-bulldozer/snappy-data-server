@@ -4,7 +4,8 @@ set -o allexport
 source .env
 
 
-data_server_img="quay.io/openshift-scale/snappy-data-server:2"
+# assign first argument to data server image, otherwise use default
+data_server_img=${1:-"quay.io/openshift-scale/snappy-data-server:2"}
 pod=snappy
 pgvol=pgvol
 db_name=pg_svc
