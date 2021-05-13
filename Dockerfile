@@ -1,5 +1,6 @@
 FROM docker.io/library/python:3.9.5
 
+
 LABEL maintainer="Matthew F Leader <mleader@redhat.com>"
 
 ENV PATH=/root/.local/bin:$PATH \
@@ -22,5 +23,6 @@ RUN apt-get install -y \
     && pip install --requirement requirements.txt
 
 WORKDIR ${APP_ROOT}/app
+
 
 CMD ["/bin/sh", "./scripts/start"]

@@ -30,6 +30,7 @@ $ mkdir "$HOME/data_server/results" -p
 
 * The bind mount volume is labeled as a shared directory with the host, `:z`, to persist results and facilitate integration with other tools on the host.
 
+
 ## Environment Variables
 
 Define a `.env` with these environment variables.
@@ -81,58 +82,21 @@ Username for the first super user.
 Password for the first super user.
 
 
-### Podman Invocation
+### Steps to create and run a new podman image of snappy server: 
 
-Create a `pod-compose.sh` script with:
-
-```shell
-#!/bin/bash
-
-set -o allexport
-source .env
+Make your changes in the snappy-data-server directory.
 
 
-data_server_img="quay.io/openshift-scale/snappy-data-server:2"
-pod=snappy
-pgvol=pgvol
-db_name=pg_svc
-webserver_name=snap-web
+This will create a local podman image name `snappy`
+
+  podman build --tag snappy -f Dockerfile
+  
+In the same directory as `pod-compose.sh`, create a `.env` configuration file.
+
+This will start the snappy server with any new local changes.
+  
+  ./pod-compose.sh localhost/snappy
 
 
-podman rm -f $db_name $webserver_name script
-podman volume rm $pgvol
-podman pod rm $pod
-podman volume create $pgvol
-podman pod create --name=$pod --publish $DATA_SERVER_PORT:$DATA_SERVER_PORT
 
 
-podman run \
-    --detach \
-    --env-file=.env \
-    --name=$db_name \
-    --pod=$pod \
-    --volume $pgvol:/var/lib/postgresql/data \
-    postgres:13.1-alpine
-    
-
-podman run \
-    --detach \
-    --name script \
-    --env POSTGRES_PORT=5432 \
-    --env POSTGRES_SERVER=localhost \
-    --env-file=.env \
-    --pod=$pod \
-    --rm \
-    $data_server_img ./scripts/prestart
-
-
-podman run \
-    --detach \
-    --env POSTGRES_PORT=5432 \
-    --env POSTGRES_SERVER=localhost \
-    --env-file=.env \
-    --name=$webserver_name \
-    --pod=$pod \
-    --volume "$HOME/data_server/results:/data_server/app/app/results:z" \
-    $data_server_img
-```
