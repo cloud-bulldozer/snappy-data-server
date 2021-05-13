@@ -1,4 +1,4 @@
-FROM docker.io/library/centos:8.2.2004
+FROM docker.io/library/python:3.9.5
 
 LABEL maintainer="Matthew F Leader <mleader@redhat.com>"
 
@@ -16,16 +16,11 @@ WORKDIR ${APP_ROOT}
 # psycopg2 dependencies:
 #   gcc, libpq-devel
 
-RUN dnf install -y \
+RUN apt-get install -y \
         gcc \
-        libpq-devel \
-        python38-devel \
-        python38 \
-    && ln -s /usr/bin/python3 /usr/bin/python \
-    && ln -s /usr/bin/pip3 /usr/bin/pip \
-    && dnf clean all \
+        libpq-dev \
     && pip install --requirement requirements.txt
 
 WORKDIR ${APP_ROOT}/app
 
-CMD ["/usr/bin/bash", "./scripts/start"]
+CMD ["/bin/sh", "./scripts/start"]

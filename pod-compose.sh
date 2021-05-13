@@ -4,7 +4,8 @@ set -o allexport
 source .env
 
 
-data_server_img="quay.io/openshift-scale/snappy-data-server:2"
+# assign first argument to data server image, otherwise use default
+data_server_img=${1:-"quay.io/openshift-scale/snappy-data-server:2"}
 pod=snappy
 pgvol=pgvol
 db_name=pg_svc
@@ -15,7 +16,7 @@ podman rm -f $db_name $webserver_name script
 podman volume rm $pgvol
 podman pod rm $pod
 podman volume create $pgvol
-podman pod create --name=$pod
+podman pod create --name=$pod --publish $DATA_SERVER_PORT:$DATA_SERVER_PORT
 
 
 podman run \
@@ -24,7 +25,7 @@ podman run \
     --name=$db_name \
     --pod=$pod \
     --volume $pgvol:/var/lib/postgresql/data \
-    postgres:12.3-alpine
+    postgres:13.1-alpine
     
 
 podman run \
@@ -45,6 +46,7 @@ podman run \
     --env-file=.env \
     --name=$webserver_name \
     --pod=$pod \
-    --publish ${DATA_SERVER_PORT}:${DATA_SERVER_PORT} \
     --volume "$HOME/data_server/results:/data_server/app/app/results:z" \
     $data_server_img
+
+

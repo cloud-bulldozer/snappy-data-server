@@ -9,7 +9,6 @@ import fastapi_users as fastusr
 import databases
 from flask import Flask
 from flask_autoindex import AutoIndex
-from fastapi.templating import Jinja2Templates
 
 import app.db.base as base
 import app.models as mdl
@@ -31,7 +30,6 @@ VALID_EXTENSIONS = (
 
 
 app = fast.FastAPI()
-templates = Jinja2Templates(directory = f'{ROOT_DIR}/templates')
 database = databases.Database(DATABASE_URL)
 user_db = fastusr.db.SQLAlchemyUserDatabase(
         user_db_model = mdl.UserDB, 
