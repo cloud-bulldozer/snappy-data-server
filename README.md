@@ -97,5 +97,8 @@ This will start the snappy server with any new local changes.
   ./pod-compose.sh localhost/snappy
 
 
+## Known Issues
+
+The application will not work if you create a policy that restricts its process to less than 600 MB. 600 MB reserves 100 MB for the server, and 500 MB for file chunking.
 
 

@@ -1,4 +1,8 @@
 import os, pathlib
+from typing import (
+    AsyncGenerator,
+    BinaryIO
+)
 
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -93,16 +97,22 @@ async def upload(
     dest = RESULTS_DIR.joinpath(filedir, file.filename)
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    async with aiofiles.open(dest, 'wb') as buffer:
-        await file.seek(0)
-        contents = await file.read()
-        await buffer.write(contents)
+    async with aiofiles.open(dest, 'wb') as buffer:       
+        # use a fraction of the host's available memory
+        async for chunk in upload_bytes(file):
+            await buffer.write(chunk)
 
-    return f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
+    return {
+        'loc': f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
+    }
 
 
-async def upload_bytes(file, chunk_size=200_000):
-    contents = '_'
+async def upload_bytes(
+    file: BinaryIO, 
+    chunk_size: int=500_000_000
+    ) -> AsyncGenerator[bytes, None]:
+
+    contents = 'dummy'
     pointer = 0    
     while len(contents):
         await file.seek(pointer)
