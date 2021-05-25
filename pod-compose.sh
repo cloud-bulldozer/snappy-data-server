@@ -9,7 +9,7 @@ data_server_img=${1:-"quay.io/openshift-scale/snappy-data-server:2"}
 pod=snappy
 pgvol=pgvol
 db_name=pg_svc
-webserver_name=snap-web
+webserver_name=snap_web
 
 
 podman rm -f $db_name $webserver_name script
@@ -36,9 +36,8 @@ podman run \
     --env-file=.env \
     --pod=$pod \
     --rm \
-    $data_server_img ./scripts/prestart
+    $data_server_img sh scripts/prestart.sh
 
-sleep 10s
 
 podman run \
     --detach \

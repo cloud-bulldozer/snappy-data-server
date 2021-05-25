@@ -16,11 +16,12 @@ WORKDIR ${APP_ROOT}
 # psycopg2 dependencies:
 #   gcc, libpq-devel
 
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install --yes \
         gcc \
         libpq-dev \
     && pip install --requirement requirements.txt
 
 WORKDIR ${APP_ROOT}/app
 
-CMD ["/bin/sh", "./scripts/start"]
+CMD ["/bin/sh", "./scripts/start.sh"]
