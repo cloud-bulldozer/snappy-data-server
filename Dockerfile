@@ -7,6 +7,8 @@ ENV PATH=/root/.local/bin:$PATH \
 ENV APP_ROOT=/data_server
 ENV PYTHONPATH=${APP_ROOT}/app
 
+RUN mkdir ${APP_ROOT}
+
 COPY ./app ${APP_ROOT}/app/
 COPY requirements.txt ${APP_ROOT}/
 

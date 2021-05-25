@@ -17,6 +17,8 @@ asyncpg = "*"
 psycopg2 = "*"
 tenacity = "*"
 uvicorn = "*"
+uvloop = "*"
+httptools = "*"
 
 [requires]
 python_version = "3.9"

@@ -28,8 +28,12 @@ SECRET = env('DATA_SERVER_SECRET')
 HOST = env('DATA_SERVER_PUBLIC_HOST')
 PORT = env('DATA_SERVER_PORT') 
 VALID_EXTENSIONS = (
-    '.png', '.jpeg', '.jpg',
-    '.tar.gz', '.tar.xz', '.tar.bz2', '.csv', '.txt', '.json', '.markdown', '.doc', '.docx', '.pdf', '.log', '.xml', '.yml', '.yaml'
+    '.csv', '.doc', '.docx',
+    '.jpeg', '.jpg', '.json',
+    '.log', '.markdown',  
+    '.png', '.pdf', 
+    '.tar', '.tar.gz', '.tar.xz', '.tar.bz2',  '.txt', 
+    '.xml', '.yml', '.yaml',
 )
 
 
