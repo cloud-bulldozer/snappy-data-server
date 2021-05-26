@@ -19,6 +19,7 @@ tenacity = "*"
 uvicorn = "*"
 uvloop = "*"
 httptools = "*"
+watchgod = "*"
 
 [requires]
 python_version = "3.9"
