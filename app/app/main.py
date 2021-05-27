@@ -3,6 +3,7 @@ from typing import (
     AsyncGenerator,
     BinaryIO
 )
+import shutil
 
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -85,7 +86,15 @@ async def results(filepath: str):
             detail = f"{filepath} was not found in results.")
     return fast.responses.FileResponse(path = p)   
 
-import shutil
+
+
+
+def validate_extension(filename):
+    if not filename.endswith(VALID_EXTENSIONS):
+        raise fast.HTTPException(
+            status_code = 400,
+            detail = 'File extension not allowed.')
+
 
 @app.post('/api')
 async def upload(
@@ -94,18 +103,10 @@ async def upload(
     user: mdl.User = fast.Depends(api_users.get_current_active_user),
     filedir: str = ''):
 
-    if not file.filename.endswith(VALID_EXTENSIONS):
-        raise fast.HTTPException(
-            status_code = 400,
-            detail = 'File extension not allowed.')
+    validate_extension(file.filename)
     
     dest = RESULTS_DIR.joinpath(filedir, file.filename)
     dest.parent.mkdir(parents=True, exist_ok=True)
-
-    # async with aiofiles.open(dest, 'wb') as buffer:       
-        # use a fraction of the host's available memory
-        # async for chunk in upload_bytes(file):
-            # await buffer.write(chunk)
     
     file.file.seek(0)
     with open(dest, 'wb') as buffer:
@@ -116,18 +117,25 @@ async def upload(
     }
 
 
-async def upload_bytes(
-    file, 
-    chunk_size: int=500_000_000
-    ) -> AsyncGenerator[bytes, None]:
+@app.post('/stream')
+async def stream(
+    request: fast.Request,
+    filename: str,
+    user: mdl.User = fast.Depends(api_users.get_current_active_user),
+    filedir: str = ''
+):
+    validate_extension(filename)
 
-    contents = 'dummy'
-    pointer = 0    
-    while len(contents):
-        await file.seek(pointer)
-        pointer += chunk_size
-        contents = await file.read(chunk_size)
-        yield contents
+    dest = RESULTS_DIR.joinpath(filedir, filename)
+    dest.parent.mkdir(parents=True, exist_ok=True)        
+
+    async with aiofiles.open(dest, 'wb') as buffer:       
+        async for chunk in request.stream():
+            await buffer.write(chunk)
+
+    return {
+        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
+    }    
 
 
 app.include_router(
