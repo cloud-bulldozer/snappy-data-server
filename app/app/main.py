@@ -85,6 +85,7 @@ async def results(filepath: str):
             detail = f"{filepath} was not found in results.")
     return fast.responses.FileResponse(path = p)   
 
+import shutil
 
 @app.post('/api')
 async def upload(
@@ -101,18 +102,22 @@ async def upload(
     dest = RESULTS_DIR.joinpath(filedir, file.filename)
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    async with aiofiles.open(dest, 'wb') as buffer:       
+    # async with aiofiles.open(dest, 'wb') as buffer:       
         # use a fraction of the host's available memory
-        async for chunk in upload_bytes(file):
-            await buffer.write(chunk)
+        # async for chunk in upload_bytes(file):
+            # await buffer.write(chunk)
+    
+    file.file.seek(0)
+    with open(dest, 'wb') as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
     return {
-        'loc': f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
+        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
     }
 
 
 async def upload_bytes(
-    file: BinaryIO, 
+    file, 
     chunk_size: int=500_000_000
     ) -> AsyncGenerator[bytes, None]:
 
