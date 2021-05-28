@@ -1,5 +1,6 @@
 #! /bin/env sh
 
+# wait for db to start
 python $APP_ROOT/app/scripts/backend_prestart.py
 
 uvicorn \
