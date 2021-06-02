@@ -62,6 +62,13 @@ AutoIndex(flask_app, browse_root = RESULTS_DIR)
 app.mount('/index', WSGIMiddleware(flask_app))
 
 
+def validate_extension(filename):
+    if not filename.endswith(VALID_EXTENSIONS):
+        raise fast.HTTPException(
+            status_code = 400,
+            detail = 'File extension not allowed.')
+
+
 @app.on_event("startup")
 async def startup():
     await database.connect()
@@ -87,38 +94,8 @@ async def results(filepath: str):
     return fast.responses.FileResponse(path = p)   
 
 
-
-
-def validate_extension(filename):
-    if not filename.endswith(VALID_EXTENSIONS):
-        raise fast.HTTPException(
-            status_code = 400,
-            detail = 'File extension not allowed.')
-
-
 @app.post('/api')
 async def upload(
-    request: fast.Request, 
-    file: fast.UploadFile = fast.File(...),
-    user: mdl.User = fast.Depends(api_users.get_current_active_user),
-    filedir: str = ''):
-
-    validate_extension(file.filename)
-    
-    dest = RESULTS_DIR.joinpath(filedir, file.filename)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    
-    file.file.seek(0)
-    with open(dest, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return {
-        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
-    }
-
-
-@app.post('/stream')
-async def stream(
     request: fast.Request,
     filename: str,
     user: mdl.User = fast.Depends(api_users.get_current_active_user),
