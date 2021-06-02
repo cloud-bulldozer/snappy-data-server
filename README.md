@@ -86,20 +86,24 @@ Username for the first super user.
 Password for the first super user.
 
 
-### Steps to create and run a new podman image of snappy server: 
+## Steps to create and run a new podman image of snappy server: 
 
 Make your changes in the snappy-data-server directory.
 
 
 This will create a local podman image name `snappy`
 
+```shell
   podman build --tag snappy -f Dockerfile
+```
   
 In the same directory as `pod-compose.sh`, create a `.env` configuration file.
 
 This will start the snappy server with any new local changes.
-  
+
+```shell  
   ./pod-compose.sh localhost/snappy
+```
 
 
 
