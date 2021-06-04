@@ -5,9 +5,9 @@ Deploy an [ASGI](https://asgi.readthedocs.io/en/latest/introduction.html) server
 
 ## Requirements
 
-* minimum 600 MB RAM
+* minimum 400 MB RAM
 
-## Setup
+### Setup
 
 Create a local directory to store data posted to the server's host's file system.
 
@@ -15,27 +15,20 @@ Create a local directory to store data posted to the server's host's file system
 $ mkdir "$HOME/data_server/results" -p
 ```
 
-## Usage
+## Local Development
 
-### Overview
+### Requirements
 
-1. Create a means of communication between the containers.
-    * Podman containers can easily communicate with `localhost` when they're in the same pod.
-    * Docker containers can easily communicate over the default `bridge` network when each service is given a `network-alias`.
+* Python ^3.7.1 ([translating caret requirements](https://python-poetry.org/docs/versions/))
+* [poetry](https://python-poetry.org/docs/#installation)
+* PostgreSQL service
+* Current working directory is project root
 
-2. Start a Postgresql database service.
+```shell
+  poetry install --dev
+```
 
-3. Add usernames and passwords. 
-    * Assign username and password to the `FIRST_SUPERUSER` environment variables. Usernames must be a valid email regular expression, but do not have to be capable of receiving email.
-    * Run the application's `inital_data.py` to seed the database with user accounts. 
-
-4. Execute the deployment's `start` script to get the server running.
-
-### Notes
-
-* The bind mount volume is labeled as a shared directory with the host, `:z`, to persist results and facilitate integration with other tools on the host.
-
-## Environment Variables
+## Environment Variable Configuration
 
 Define a `.env` with these environment variables.
 
@@ -86,10 +79,9 @@ Username for the first super user.
 Password for the first super user.
 
 
-## Steps to create and run a new podman image of snappy server: 
+## Steps to create and run a new container image of snappy server: 
 
 Make your changes in the snappy-data-server directory.
-
 
 This will create a local podman image name `snappy`
 
@@ -99,13 +91,33 @@ This will create a local podman image name `snappy`
   
 In the same directory as `pod-compose.sh`, create a `.env` configuration file.
 
-This will start the snappy server with any new local changes.
+Start snappy server pod with the image you built locally.
 
 ```shell  
   ./pod-compose.sh localhost/snappy
 ```
 
+## Containerized Application Usage
 
+### Overview
+
+1. Configure `.env` for PostgreSQL service and Snappy server application.
+
+2. Create a means of communication between the containers.
+    * Podman containers can easily communicate with `localhost` when they're in the same pod.
+    * Docker containers can easily communicate over the default `bridge` network when each service is given a `network-alias`.
+
+3. Start a PostgreSQL database service.
+
+4. Add usernames and passwords. 
+    * Assign username and password to the `FIRST_SUPERUSER` environment variables. Usernames must be a valid email regular expression, but do not have to be capable of receiving email.
+    * Run the application's `inital_data.py` to seed the database with user accounts. 
+
+5. Execute the deployment's `start.sh` script to get the server running.
+
+### Notes
+
+* The bind mount volume is labeled as a shared directory with the host, `:z`, to persist results and facilitate integration with other tools on the host.
 
 
 
