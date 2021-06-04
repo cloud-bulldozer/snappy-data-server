@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "snappy-data-server"
+version = "0.2.0"
+description = "python file server"
+authors = ["mleader <mleader@redhat.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7.1"
+aiofiles = "^0.7.0"
+databases = "^0.4.3"
+environs = "^9.3.2"
+fastapi = "^0.65.1"
+fastapi-users = "^6.1.0"
+python-multipart = "^0.0.5"
+Flask-AutoIndex = "^0.6.6"
+asyncpg = "^0.23.0"
+psycopg2 = "^2.8.6"
+tenacity = "^7.0.0"
+uvicorn = "^0.14.0"
+uvloop = "^0.15.2"
+httptools = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+watchgod = "^0.7"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
