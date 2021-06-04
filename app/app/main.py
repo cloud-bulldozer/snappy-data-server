@@ -24,8 +24,12 @@ SECRET = env('DATA_SERVER_SECRET')
 HOST = env('DATA_SERVER_PUBLIC_HOST')
 PORT = env('DATA_SERVER_PORT') 
 VALID_EXTENSIONS = (
-    '.png', '.jpeg', '.jpg',
-    '.tar.gz', '.tar.xz', '.tar.bz2', '.csv', '.txt', '.json', '.markdown', '.doc', '.docx', '.pdf', '.log', '.xml', '.yml', '.yaml'
+    '.csv', '.doc', '.docx',
+    '.jpeg', '.jpg', '.json',
+    '.log', '.markdown',  
+    '.png', '.pdf', 
+    '.tar', '.tar.gz', '.tar.xz', '.tar.bz2',  '.txt', 
+    '.xml', '.yml', '.yaml',
 )
 
 
@@ -51,6 +55,13 @@ api_users = fastusr.FastAPIUsers(
 flask_app = Flask(__name__)
 AutoIndex(flask_app, browse_root = RESULTS_DIR)
 app.mount('/index', WSGIMiddleware(flask_app))
+
+
+def validate_extension(filename):
+    if not filename.endswith(VALID_EXTENSIONS):
+        raise fast.HTTPException(
+            status_code = 400,
+            detail = 'File extension not allowed.')
 
 
 @app.on_event("startup")
@@ -80,25 +91,23 @@ async def results(filepath: str):
 
 @app.post('/api')
 async def upload(
-    request: fast.Request, 
-    file: fast.UploadFile = fast.File(...),
+    request: fast.Request,
+    filename: str,
     user: mdl.User = fast.Depends(api_users.get_current_active_user),
-    filedir: str = ''):
+    filedir: str = ''
+):
+    validate_extension(filename)
 
-    if not file.filename.endswith(VALID_EXTENSIONS):
-        raise fast.HTTPException(
-            status_code = 400,
-            detail = 'File extension not allowed.')
-    
-    dest = RESULTS_DIR.joinpath(filedir, file.filename)
-    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest = RESULTS_DIR.joinpath(filedir, filename)
+    dest.parent.mkdir(parents=True, exist_ok=True)        
 
-    async with aiofiles.open(dest, 'wb') as buffer:
-        await file.seek(0)
-        contents = await file.read()
-        await buffer.write(contents)
+    async with aiofiles.open(dest, 'wb') as buffer:       
+        async for chunk in request.stream():
+            await buffer.write(chunk)
 
-    return f'{HOST}:{PORT}/results/{dest.parent.name}/{dest.name}'
+    return {
+        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
+    }    
 
 
 app.include_router(
