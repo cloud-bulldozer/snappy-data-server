@@ -5,7 +5,7 @@ Deploy an [ASGI](https://asgi.readthedocs.io/en/latest/introduction.html) server
 
 ## Requirements
 
-* minimum 400 MB RAM
+* minimum 600 MiB RAM
 
 ### Setup
 
