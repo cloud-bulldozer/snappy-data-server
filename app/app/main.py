@@ -1,9 +1,10 @@
-import os
+import os, shutil, time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi_utils.tasks import repeat_every
 import environs
 import aiofiles
 import starlette as star
@@ -35,6 +36,11 @@ VALID_EXTENSIONS = (
     '.xml', '.yml', '.yaml',
 )
 
+# specify the path
+path = RESULTS_DIR
+
+# specify the days
+days = 1
 
 app = fast.FastAPI()
 database = databases.Database(DATABASE_URL)
@@ -80,10 +86,78 @@ def validate_extension(filename):
     )
  
 
+def remove_folder(path):
+
+	if not shutil.rmtree(path):
+		print(f"{path} is removed successfully")
+	else:
+		print(f"Unable to delete the {path}")
+
+
+def remove_file(path):
+	
+	if not os.remove(path):		
+		print(f"{path} is removed successfully")
+	else:		
+		print(f"Unable to delete the {path}")
+
+
+def get_file_or_folder_age(path):
+
+	# getting ctime of the file/folder
+	# time will be in seconds
+	ctime = os.stat(path).st_ctime
+
+	return ctime
+
 
 @app.on_event("startup")
 async def startup():
     await database.connect()
+
+@app.on_event("startup")
+@repeat_every(seconds=160) 
+async def remove_old_files()
+    # converting days to seconds
+	# time.time() returns current time in seconds
+	seconds = time.time() - (days * 160)
+
+	# checking whether the file is present in path or not
+	if os.path.exists(path):
+		
+		# iterating over each and every folder and file in the path
+		for root_folder, folders, files in os.walk(path):
+
+			# checking folder from the root_folder
+			for folder in folders:
+
+				# folder path
+				folder_path = os.path.join(root_folder, folder)
+
+				# comparing with the days
+				if seconds >= get_file_or_folder_age(folder_path):
+
+					remove_folder(folder_path)
+					
+
+			# checking the current directory files
+			for file in files:
+
+				# file path
+				file_path = os.path.join(root_folder, file)
+
+				# comparing the days
+				if seconds >= get_file_or_folder_age(file_path):
+
+					# invoking the remove_file function
+					remove_file(file_path)
+					
+	else:
+
+		# folder is not found
+		print(f'"{path}" is not found')
+    
+
 
 
 @app.on_event("shutdown")
