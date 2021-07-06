@@ -117,7 +117,7 @@ async def startup():
 
 @app.on_event("startup")
 @repeat_every(seconds=160) 
-async def remove_old_files()
+async def remove_old_files():
     # converting days to seconds
 	# time.time() returns current time in seconds
 	seconds = time.time() - (days * 160)
