@@ -12,8 +12,7 @@ import fastapi_users as fastusr
 import databases
 from flask import Flask
 from flask_autoindex import AutoIndex
-
-
+import logging 
 import app.db.base as base
 import app.models as mdl
 
@@ -40,7 +39,7 @@ VALID_EXTENSIONS = (
 path = RESULTS_DIR
 
 # specify the days
-days = 1
+days = 180
 
 app = fast.FastAPI()
 database = databases.Database(DATABASE_URL)
@@ -65,6 +64,8 @@ flask_app = Flask(__name__)
 AutoIndex(flask_app, browse_root = RESULTS_DIR)
 app.mount('/index', WSGIMiddleware(flask_app))
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def validate_extension(filename):
     suffixes = Path(filename).suffixes
@@ -89,17 +90,17 @@ def validate_extension(filename):
 def remove_folder(path):
 
 	if not shutil.rmtree(path):
-		print(f"{path} is removed successfully")
+		logger.info(f"{path} is removed successfully")
 	else:
-		print(f"Unable to delete the {path}")
+		logger.info(f"Unable to delete the {path}")
 
 
 def remove_file(path):
 	
 	if not os.remove(path):		
-		print(f"{path} is removed successfully")
+		logger.info(f"{path} is removed successfully")
 	else:		
-		print(f"Unable to delete the {path}")
+		logger.info(f"Unable to delete the {path}")
 
 
 def get_file_or_folder_age(path):
@@ -116,11 +117,10 @@ async def startup():
     await database.connect()
 
 @app.on_event("startup")
-@repeat_every(seconds=160) 
+@repeat_every(seconds= 24 * 60 *60) 
 async def remove_old_files():
-    # converting days to seconds
 	# time.time() returns current time in seconds
-	seconds = time.time() - (days * 160)
+	seconds = time.time() - (days * 24 * 60 * 60)
 
 	# checking whether the file is present in path or not
 	if os.path.exists(path):
@@ -131,10 +131,8 @@ async def remove_old_files():
 			# checking folder from the root_folder
 			for folder in folders:
 
-				# folder path
 				folder_path = os.path.join(root_folder, folder)
 
-				# comparing with the days
 				if seconds >= get_file_or_folder_age(folder_path):
 
 					remove_folder(folder_path)
@@ -143,19 +141,16 @@ async def remove_old_files():
 			# checking the current directory files
 			for file in files:
 
-				# file path
 				file_path = os.path.join(root_folder, file)
 
-				# comparing the days
 				if seconds >= get_file_or_folder_age(file_path):
 
-					# invoking the remove_file function
 					remove_file(file_path)
 					
 	else:
 
 		# folder is not found
-		print(f'"{path}" is not found')
+		logger.info(f'"{path}" is not found')
     
 
 
