@@ -78,6 +78,19 @@ Username for the first super user.
 #### FIRST_SUPERUSER_PASSWORD
 Password for the first super user.
 
+### Pruner Configuration
+
+---
+
+#### ENABLE_PRUNER
+Var to enable or disable pruner
+
+#### PRUNER_DIRECTORY=
+The directory on which pruner should be enabled , leave it empty if you want the pruner to run on all folders on snappy file server.
+
+#### PRUNER_DURATION=
+The time period after which older files and folders get deleted.
+
 
 ## Steps to create and run a new container image of snappy server: 
 
