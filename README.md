@@ -85,10 +85,10 @@ Password for the first super user.
 #### ENABLE_PRUNER
 Var to enable or disable pruner
 
-#### PRUNER_DIRECTORY=
+#### PRUNER_DIRECTORY
 The directory on which pruner should be enabled , leave it empty if you want the pruner to run on all folders on snappy file server.
 
-#### PRUNER_DURATION=
+#### PRUNER_DURATION
 The time period after which older files and folders get deleted.
 
 
