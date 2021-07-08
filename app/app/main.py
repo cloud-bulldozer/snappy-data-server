@@ -37,8 +37,8 @@ VALID_EXTENSIONS = (
 )
 
 if(env('ENABLE_PRUNER')=='true'):
-    # specify the path
-    path = os.path.join(RESULTS_DIR, env('PRUNER_DIRECTORY'))
+	# specify the path
+	path = os.path.join(RESULTS_DIR, env('PRUNER_DIRECTORY'))
 
 # specify the days
 days = int(env('PRUNER_DURATION'))
@@ -46,19 +46,19 @@ days = int(env('PRUNER_DURATION'))
 app = fast.FastAPI()
 database = databases.Database(DATABASE_URL)
 user_db = fastusr.db.SQLAlchemyUserDatabase(
-        user_db_model = mdl.UserDB, 
-        database = database, 
-        users = base.UserTable.__table__)
+		user_db_model = mdl.UserDB, 
+		database = database, 
+		users = base.UserTable.__table__)
 jwt_authentication = fastusr.authentication.JWTAuthentication(
-    secret=SECRET, lifetime_seconds=28800,
-    tokenUrl='/auth/jwt/login')
+	secret=SECRET, lifetime_seconds=28800,
+	tokenUrl='/auth/jwt/login')
 api_users = fastusr.FastAPIUsers(
-    db = user_db,
-    auth_backends = [jwt_authentication],
-    user_model = mdl.User,
-    user_create_model = mdl.UserCreate,
-    user_update_model = mdl.UserUpdate,
-    user_db_model = mdl.UserDB)
+	db = user_db,
+	auth_backends = [jwt_authentication],
+	user_model = mdl.User,
+	user_create_model = mdl.UserCreate,
+	user_update_model = mdl.UserUpdate,
+	user_db_model = mdl.UserDB)
 
 
 # Flask AutoIndex module for exploring directories
@@ -70,6 +70,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def validate_extension(filename):
+<<<<<<< HEAD
     suffixes = Path(filename).suffixes
     bad_suffixes = list(filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes))
 
@@ -88,6 +89,12 @@ def validate_extension(filename):
         detail = detail
     )
  
+=======
+	if not filename.endswith(VALID_EXTENSIONS):
+		raise fast.HTTPException(
+			status_code = 400,
+			detail = 'File extension not allowed.')
+>>>>>>> 878e7a8... indentation fix
 
 def remove_folder(path,tdate):
 
@@ -116,17 +123,18 @@ def get_file_or_folder_age(path):
 
 @app.on_event("startup")
 async def startup():
-    await database.connect()
+	await database.connect()
 
 @app.on_event("startup")
 @repeat_every(seconds= 24 * 60 *60) 
 async def remove_old_files():
 
-    today = date.today()
-    logger.info(f"---------Pruner logs for {today}-------")
+	today = date.today()
+	logger.info(f"---------Pruner logs for {today}-------")
 
-    # time.time() returns current time in seconds
+	# time.time() returns current time in seconds
 	seconds = time.time() - (days * 24 * 60 * 60)
+	
 
 	# checking whether the file is present in path or not
 	if os.path.exists(path):
@@ -157,53 +165,53 @@ async def remove_old_files():
 
 		# pruner is disabled
 		logger.info(f'---{today}---Pruner disabled by default')
-    
+	
 
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await database.disconnect()
+	await database.disconnect()
 
 
 @app.get('/')
 async def root(): 
-    return star.responses.RedirectResponse(url = '/docs')
+	return star.responses.RedirectResponse(url = '/docs')
 
 
 @app.get('/results/{filepath:path}')
 async def results(filepath: str):
-    p = RESULTS_DIR.joinpath(filepath)
-    if not p.is_file():
-        raise fast.HTTPException(
-            status_code = 404,
-            detail = f"{filepath} was not found in results.")
-    return fast.responses.FileResponse(path = p)   
+	p = RESULTS_DIR.joinpath(filepath)
+	if not p.is_file():
+		raise fast.HTTPException(
+			status_code = 404,
+			detail = f"{filepath} was not found in results.")
+	return fast.responses.FileResponse(path = p)   
 
 
 @app.post('/api')
 async def upload(
-    request: fast.Request,
-    filename: str,
-    user: mdl.User = fast.Depends(api_users.get_current_active_user),
-    filedir: str = ''
+	request: fast.Request,
+	filename: str,
+	user: mdl.User = fast.Depends(api_users.get_current_active_user),
+	filedir: str = ''
 ):
-    validate_extension(filename)
+	validate_extension(filename)
 
-    dest = RESULTS_DIR.joinpath(filedir, filename)
-    dest.parent.mkdir(parents=True, exist_ok=True)        
+	dest = RESULTS_DIR.joinpath(filedir, filename)
+	dest.parent.mkdir(parents=True, exist_ok=True)        
 
-    async with aiofiles.open(dest, 'wb') as buffer:       
-        async for chunk in request.stream():
-            await buffer.write(chunk)
+	async with aiofiles.open(dest, 'wb') as buffer:       
+		async for chunk in request.stream():
+			await buffer.write(chunk)
 
-    return {
-        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
-    }    
+	return {
+		'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
+	}    
 
 
 app.include_router(
-    api_users.get_auth_router(jwt_authentication),
-    prefix = '/auth/jwt',
-    tags = ['auth']
+	api_users.get_auth_router(jwt_authentication),
+	prefix = '/auth/jwt',
+	tags = ['auth']
 )
