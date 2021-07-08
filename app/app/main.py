@@ -2,6 +2,7 @@ import os, shutil, time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
+from datetime import date
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi_utils.tasks import repeat_every
@@ -35,11 +36,12 @@ VALID_EXTENSIONS = (
     '.xml', '.yml', '.yaml',
 )
 
-# specify the path
-path = RESULTS_DIR
+if(env('ENABLE_PRUNER')=='true'):
+    # specify the path
+    path = os.path.join(RESULTS_DIR, env('PRUNER_DIRECTORY'))
 
 # specify the days
-days = 180
+days = int(env('PRUNER_DURATION'))
 
 app = fast.FastAPI()
 database = databases.Database(DATABASE_URL)
@@ -87,29 +89,29 @@ def validate_extension(filename):
     )
  
 
-def remove_folder(path):
+def remove_folder(path,tdate):
 
 	if not shutil.rmtree(path):
-		logger.info(f"{path} is removed successfully")
+		logger.info(f"---{tdate}---{path} folder is removed successfully")
 	else:
-		logger.info(f"Unable to delete the {path}")
+		logger.info(f"---{tdate}---Unable to delete the {path}")
 
 
-def remove_file(path):
+def remove_file(path,tdate):
 	
 	if not os.remove(path):		
-		logger.info(f"{path} is removed successfully")
+		logger.info(f"---{tdate}---{path} file is removed successfully")
 	else:		
-		logger.info(f"Unable to delete the {path}")
+		logger.info(f"---{tdate}---Unable to delete the {path}")
 
 
 def get_file_or_folder_age(path):
 
 	# getting ctime of the file/folder
 	# time will be in seconds
-	ctime = os.stat(path).st_ctime
+	mtime = os.stat(path).st_mtime
 
-	return ctime
+	return mtime
 
 
 @app.on_event("startup")
@@ -119,7 +121,11 @@ async def startup():
 @app.on_event("startup")
 @repeat_every(seconds= 24 * 60 *60) 
 async def remove_old_files():
-	# time.time() returns current time in seconds
+
+    today = date.today()
+    logger.info(f"---------Pruner logs for {today}-------")
+
+    # time.time() returns current time in seconds
 	seconds = time.time() - (days * 24 * 60 * 60)
 
 	# checking whether the file is present in path or not
@@ -135,7 +141,7 @@ async def remove_old_files():
 
 				if seconds >= get_file_or_folder_age(folder_path):
 
-					remove_folder(folder_path)
+					remove_folder(folder_path,today)
 					
 
 			# checking the current directory files
@@ -145,12 +151,12 @@ async def remove_old_files():
 
 				if seconds >= get_file_or_folder_age(file_path):
 
-					remove_file(file_path)
+					remove_file(file_path,today)
 					
 	else:
 
-		# folder is not found
-		logger.info(f'"{path}" is not found')
+		# pruner is disabled
+		logger.info(f'---{today}---Pruner disabled by default')
     
 
 
