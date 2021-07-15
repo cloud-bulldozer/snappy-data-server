@@ -62,16 +62,16 @@ app.mount('/index', WSGIMiddleware(flask_app))
 
 def validate_extension(filename):
     suffixes = Path(filename).suffixes
-    bad_suffixes = filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes)
+    bad_suffixes = list(filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes))
 
     if suffixes and not bad_suffixes:
         # happy path has at least 1 suffix, and 0 bad suffixes
         return
     elif not suffixes:
         detail = 'Uploaded file is invalid because it does not have an extension.'
-    elif bad_suffixes == 1:
+    elif len(bad_suffixes) == 1:
         detail = f'{bad_suffixes} is an invalid extension.'
-    elif bad_suffixes > 1:
+    elif len(bad_suffixes) > 1:
         detail = f'{bad_suffixes} are invalid extensions.'
     
     raise fast.HTTPException(
