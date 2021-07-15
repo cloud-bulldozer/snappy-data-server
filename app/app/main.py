@@ -16,6 +16,7 @@ from flask_autoindex import AutoIndex
 import logging 
 import app.db.base as base
 import app.models as mdl
+import app.config as cfg
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -121,9 +122,12 @@ def get_file_or_folder_age(path):
 	return mtime
 
 
+
 @app.on_event("startup")
-async def startup():
-	await database.connect()
+async def startup():	
+    await database.connect()
+    config = cfg.get_config()
+    logger.info(config)
 
 @app.on_event("startup")
 @repeat_every(seconds= 24 * 60 *60) 

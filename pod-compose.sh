@@ -43,6 +43,7 @@ podman run \
     --name=snap_web \
     --pod=snappy \
     --volume "$HOME/data_server/results:/data_server/app/app/results:z" \
+    --volume "$PWD/snappy.toml:/data_server/app/snappy.toml:z" \
     $data_server_img
 
 

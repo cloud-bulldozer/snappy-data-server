@@ -24,6 +24,7 @@ tenacity = "^7.0.0"
 uvicorn = "^0.14.0"
 uvloop = "^0.15.2"
 httptools = "^0.2.0"
+vyper-config = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 watchgod = "^0.7"
