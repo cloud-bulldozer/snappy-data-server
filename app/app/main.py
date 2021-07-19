@@ -1,4 +1,6 @@
-import os, pathlib
+import os
+from pathlib import Path
+from typing import Any, Dict, Iterable, Optional
 
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -10,12 +12,13 @@ import databases
 from flask import Flask
 from flask_autoindex import AutoIndex
 
+
 import app.db.base as base
 import app.models as mdl
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-RESULTS_DIR = pathlib.Path('/'.join((ROOT_DIR, 'results')))
+RESULTS_DIR = Path('/'.join((ROOT_DIR, 'results')))
 env = environs.Env()
 env.read_env(recurse=False)
 POSTGRES_PORT = f":{env('POSTGRES_PORT')}" if len(env('POSTGRES_PORT')) else ''
@@ -28,7 +31,7 @@ VALID_EXTENSIONS = (
     '.jpeg', '.jpg', '.json',
     '.log', '.markdown',  
     '.png', '.pdf', 
-    '.tar', '.tar.gz', '.tar.xz', '.tar.bz2',  '.txt', 
+    '.tar', '.gz', '.xz', '.bz2',  '.txt', 
     '.xml', '.yml', '.yaml',
 )
 
@@ -58,10 +61,24 @@ app.mount('/index', WSGIMiddleware(flask_app))
 
 
 def validate_extension(filename):
-    if not filename.endswith(VALID_EXTENSIONS):
-        raise fast.HTTPException(
-            status_code = 400,
-            detail = 'File extension not allowed.')
+    suffixes = Path(filename).suffixes
+    bad_suffixes = list(filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes))
+
+    if suffixes and not bad_suffixes:
+        # happy path has at least 1 suffix, and 0 bad suffixes
+        return
+    elif not suffixes:
+        detail = 'Uploaded file is invalid because it does not have an extension.'
+    elif len(bad_suffixes) == 1:
+        detail = f'{bad_suffixes} is an invalid extension.'
+    elif len(bad_suffixes) > 1:
+        detail = f'{bad_suffixes} are invalid extensions.'
+    
+    raise fast.HTTPException(
+        status_code = 400,
+        detail = detail
+    )
+ 
 
 
 @app.on_event("startup")
