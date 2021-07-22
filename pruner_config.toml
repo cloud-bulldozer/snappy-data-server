@@ -1,0 +1,7 @@
+[pruner.folder1]
+path = "folder1"
+days_to_live = 
+
+[pruner.folder2]
+path = "folder2"
+days_to_live = 

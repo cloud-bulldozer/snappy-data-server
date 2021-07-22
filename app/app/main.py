@@ -11,13 +11,13 @@ import aiofiles
 import starlette as star
 import fastapi_users as fastusr
 import databases
+import json
 from flask import Flask
 from flask_autoindex import AutoIndex
 import logging 
 import app.db.base as base
 import app.models as mdl
 import app.config as cfg
-
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = Path('/'.join((ROOT_DIR, 'results')))
@@ -37,29 +37,23 @@ VALID_EXTENSIONS = (
     '.xml', '.yml', '.yaml',
 )
 
-if(env('ENABLE_PRUNER')=='true'):
-	# specify the path
-	path = os.path.join(RESULTS_DIR, env('PRUNER_DIRECTORY'))
-
-# specify the days
-days = int(env('PRUNER_DURATION'))
 
 app = fast.FastAPI()
 database = databases.Database(DATABASE_URL)
 user_db = fastusr.db.SQLAlchemyUserDatabase(
-		user_db_model = mdl.UserDB, 
-		database = database, 
-		users = base.UserTable.__table__)
+                user_db_model = mdl.UserDB, 
+                database = database, 
+                users = base.UserTable.__table__)
 jwt_authentication = fastusr.authentication.JWTAuthentication(
-	secret=SECRET, lifetime_seconds=28800,
-	tokenUrl='/auth/jwt/login')
+        secret=SECRET, lifetime_seconds=28800,
+        tokenUrl='/auth/jwt/login')
 api_users = fastusr.FastAPIUsers(
-	db = user_db,
-	auth_backends = [jwt_authentication],
-	user_model = mdl.User,
-	user_create_model = mdl.UserCreate,
-	user_update_model = mdl.UserUpdate,
-	user_db_model = mdl.UserDB)
+        db = user_db,
+        auth_backends = [jwt_authentication],
+        user_model = mdl.User,
+        user_create_model = mdl.UserCreate,
+        user_update_model = mdl.UserUpdate,
+        user_db_model = mdl.UserDB)
 
 
 # Flask AutoIndex module for exploring directories
@@ -71,6 +65,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def validate_extension(filename):
+<<<<<<< HEAD
 <<<<<<< HEAD
     suffixes = Path(filename).suffixes
     bad_suffixes = list(filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes))
@@ -96,126 +91,134 @@ def validate_extension(filename):
 			status_code = 400,
 			detail = 'File extension not allowed.')
 >>>>>>> 878e7a8... indentation fix
+=======
+        if not filename.endswith(VALID_EXTENSIONS):
+                raise fast.HTTPException(
+                        status_code = 400,
+                        detail = 'File extension not allowed.')
+>>>>>>> e3ca0a8... snappy pruner modifications
 
 def remove_folder(path,tdate):
 
-	if not shutil.rmtree(path):
-		logger.info(f"---{tdate}---{path} folder is removed successfully")
-	else:
-		logger.info(f"---{tdate}---Unable to delete the {path}")
+        if not shutil.rmtree(path):
+                logger.info(f"---{tdate}---{path} folder is removed successfully")
+        else:
+                logger.info(f"---{tdate}---Unable to delete the {path}")
 
 
 def remove_file(path,tdate):
-	
-	if not os.remove(path):		
-		logger.info(f"---{tdate}---{path} file is removed successfully")
-	else:		
-		logger.info(f"---{tdate}---Unable to delete the {path}")
+
+           if not os.remove(path):         
+                logger.info(f"---{tdate}---{path} file is removed successfully")
+           else:           
+                logger.info(f"---{tdate}---Unable to delete the {path}")
 
 
 def get_file_or_folder_age(path):
 
-	# getting ctime of the file/folder
-	# time will be in seconds
-	mtime = os.stat(path).st_mtime
+        # getting modified time of the file/folder
+        # time will be in seconds
+        mtime = os.stat(path).st_mtime
 
-	return mtime
-
-
+        return mtime
+        
+@app.on_event("startup")
+async def startup():
+        await database.connect()
 
 @app.on_event("startup")
-async def startup():	
-    await database.connect()
-    config = cfg.get_config()
-    logger.info(config)
-
-@app.on_event("startup")
-@repeat_every(seconds= 24 * 60 *60) 
+@repeat_every(seconds= 24 * 60 * 60) 
 async def remove_old_files():
 
-	today = date.today()
-	logger.info(f"---------Pruner logs for {today}-------")
 
-	# time.time() returns current time in seconds
-	seconds = time.time() - (days * 24 * 60 * 60)
-	
+    if(env('ENABLE_PRUNER')=='true'):
+        today = date.today()
+        logger.info(f"---------Pruner logs for {today}-------")
 
-	# checking whether the file is present in path or not
-	if os.path.exists(path):
-		
-		# iterating over each and every folder and file in the path
-		for root_folder, folders, files in os.walk(path):
+        config=cfg.get_config()
+        logger.info(config)
+        dirs=config['pruner']
+        for i in dirs:
 
-			# checking folder from the root_folder
-			for folder in folders:
+            folder=config['pruner'][i]['path']
+            days = config['pruner'][i]['days_to_live']
+            path = os.path.join(RESULTS_DIR, folder)
+                        
+            # time.time() returns current time in seconds
+            seconds = time.time() - (days * 24 * 60 * 60)
 
-				folder_path = os.path.join(root_folder, folder)
 
-				if seconds >= get_file_or_folder_age(folder_path):
+            # checking whether the file is present in path or not
+            if os.path.exists(path):
 
-					remove_folder(folder_path,today)
-					
+                    # iterating over each and every folder and file in the path
+                    for root_folder, folders, files in os.walk(path):
 
-			# checking the current directory files
-			for file in files:
+                            # checking folder from the root_folder
+                            for folder in folders:
 
-				file_path = os.path.join(root_folder, file)
+                                    folder_path = os.path.join(root_folder, folder)
 
-				if seconds >= get_file_or_folder_age(file_path):
+                                    if seconds >= get_file_or_folder_age(folder_path):
 
-					remove_file(file_path,today)
-					
-	else:
+                                            remove_folder(folder_path,today)
 
-		# pruner is disabled
-		logger.info(f'---{today}---Pruner disabled by default')
-	
+
+                            # checking the current directory files
+                            for file in files:
+
+                                    file_path = os.path.join(root_folder, file)
+
+                                    if seconds >= get_file_or_folder_age(file_path):
+
+                                            remove_file(file_path,today)
+
 
 
 
 @app.on_event("shutdown")
 async def shutdown():
-	await database.disconnect()
+        await database.disconnect()
 
 
 @app.get('/')
 async def root(): 
-	return star.responses.RedirectResponse(url = '/docs')
+        return star.responses.RedirectResponse(url = '/docs')
 
 
 @app.get('/results/{filepath:path}')
 async def results(filepath: str):
-	p = RESULTS_DIR.joinpath(filepath)
-	if not p.is_file():
-		raise fast.HTTPException(
-			status_code = 404,
-			detail = f"{filepath} was not found in results.")
-	return fast.responses.FileResponse(path = p)   
+        p = RESULTS_DIR.joinpath(filepath)
+        if not p.is_file():
+                raise fast.HTTPException(
+                        status_code = 404,
+                        detail = f"{filepath} was not found in results.")
+        return fast.responses.FileResponse(path = p)   
 
 
 @app.post('/api')
 async def upload(
-	request: fast.Request,
-	filename: str,
-	user: mdl.User = fast.Depends(api_users.get_current_active_user),
-	filedir: str = ''
+        request: fast.Request,
+        filename: str,
+        user: mdl.User = fast.Depends(api_users.get_current_active_user),
+        filedir: str = ''
 ):
-	validate_extension(filename)
+        validate_extension(filename)
 
-	dest = RESULTS_DIR.joinpath(filedir, filename)
-	dest.parent.mkdir(parents=True, exist_ok=True)        
+        dest = RESULTS_DIR.joinpath(filedir, filename)
+        dest.parent.mkdir(parents=True, exist_ok=True)        
 
-	async with aiofiles.open(dest, 'wb') as buffer:       
-		async for chunk in request.stream():
-			await buffer.write(chunk)
+        async with aiofiles.open(dest, 'wb') as buffer:       
+                async for chunk in request.stream():
+                        await buffer.write(chunk)
 
-	return {
-		'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
-	}    
+        return {
+                'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
+        }    
 
 
 app.include_router(
-	api_users.get_auth_router(jwt_authentication),
-	prefix = '/auth/jwt',
-	tags = ['auth']
+        api_users.get_auth_router(jwt_authentication),
+        prefix = '/auth/jwt',
+        tags = ['auth']
 )

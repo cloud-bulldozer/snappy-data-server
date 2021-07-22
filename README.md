@@ -85,11 +85,9 @@ Password for the first super user.
 #### ENABLE_PRUNER
 Var to enable or disable pruner
 
-#### PRUNER_DIRECTORY
-The directory on which pruner should be enabled , leave it empty if you want the pruner to run on all folders on snappy file server.
+Configure the `pruner_config.toml` configuration file to add folders on which the pruner should be active. In the toml file you also need to set the days_to_live parameter, which will determine the number of days after which the files/folders in the path are pruned.
 
-#### PRUNER_DURATION
-The time period after which older files and folders get deleted.
+The pruner and server logs can be viewed by running the command `podman logs snap_web` on the machine/instance on which snappy server is deployed.
 
 
 ## Steps to create and run a new container image of snappy server: 
