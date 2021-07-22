@@ -65,8 +65,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def validate_extension(filename):
-<<<<<<< HEAD
-<<<<<<< HEAD
     suffixes = Path(filename).suffixes
     bad_suffixes = list(filter(lambda ext: ext not in VALID_EXTENSIONS, suffixes))
 
@@ -85,18 +83,6 @@ def validate_extension(filename):
         detail = detail
     )
  
-=======
-	if not filename.endswith(VALID_EXTENSIONS):
-		raise fast.HTTPException(
-			status_code = 400,
-			detail = 'File extension not allowed.')
->>>>>>> 878e7a8... indentation fix
-=======
-        if not filename.endswith(VALID_EXTENSIONS):
-                raise fast.HTTPException(
-                        status_code = 400,
-                        detail = 'File extension not allowed.')
->>>>>>> e3ca0a8... snappy pruner modifications
 
 def remove_folder(path,tdate):
 
