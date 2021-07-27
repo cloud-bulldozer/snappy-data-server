@@ -3,6 +3,9 @@
 set -o allexport
 source .env
 
+if [ ! -d "$HOME/data_server/results" ] ; then
+    mkdir "$HOME/data_server/results" -p
+fi
 
 # assign first argument to data server image, otherwise use default
 data_server_img=${1:-"quay.io/openshift-scale/snappy-data-server:2"}
@@ -22,7 +25,7 @@ podman run \
     --pod=snappy \
     --volume pgvol:/var/lib/postgresql/data \
     postgres:13.1-alpine
-    
+
 
 podman run \
     --detach \
