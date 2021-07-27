@@ -1,21 +1,24 @@
-import os
+import os, shutil, time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
+from datetime import date
 import fastapi as fast
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi_utils.tasks import repeat_every
 import environs
 import aiofiles
 import starlette as star
 import fastapi_users as fastusr
 import databases
+import json
 from flask import Flask
 from flask_autoindex import AutoIndex
-
-
+import logging 
 import app.db.base as base
 import app.models as mdl
-
+import app.config as cfg
+from app.config import Config
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = Path('/'.join((ROOT_DIR, 'results')))
@@ -43,15 +46,15 @@ user_db = fastusr.db.SQLAlchemyUserDatabase(
         database = database, 
         users = base.UserTable.__table__)
 jwt_authentication = fastusr.authentication.JWTAuthentication(
-    secret=SECRET, lifetime_seconds=28800,
-    tokenUrl='/auth/jwt/login')
+        secret=SECRET, lifetime_seconds=28800,
+        tokenUrl='/auth/jwt/login')
 api_users = fastusr.FastAPIUsers(
-    db = user_db,
-    auth_backends = [jwt_authentication],
-    user_model = mdl.User,
-    user_create_model = mdl.UserCreate,
-    user_update_model = mdl.UserUpdate,
-    user_db_model = mdl.UserDB)
+        db = user_db,
+        auth_backends = [jwt_authentication],
+        user_model = mdl.User,
+        user_create_model = mdl.UserCreate,
+        user_update_model = mdl.UserUpdate,
+        user_db_model = mdl.UserDB)
 
 
 # Flask AutoIndex module for exploring directories
@@ -59,6 +62,8 @@ flask_app = Flask(__name__)
 AutoIndex(flask_app, browse_root = RESULTS_DIR)
 app.mount('/index', WSGIMiddleware(flask_app))
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def validate_extension(filename):
     suffixes = Path(filename).suffixes
@@ -80,10 +85,66 @@ def validate_extension(filename):
     )
  
 
+def remove_folder(path,tdate):
+    if not shutil.rmtree(path):
+        logger.info(f"---{tdate}---{path} folder is removed successfully")
+    else:
+        logger.info(f"---{tdate}---Unable to delete the {path}")
 
+
+def remove_file(path,tdate):
+    if not os.remove(path):         
+        logger.info(f"---{tdate}---{path} file is removed successfully")
+    else:           
+        logger.info(f"---{tdate}---Unable to delete the {path}")
+
+
+def get_file_or_folder_age(path):
+    # getting modified time of the file/folder in seconds
+    return os.stat(path).st_mtime
+        
 @app.on_event("startup")
 async def startup():
     await database.connect()
+
+@app.on_event("startup")
+@repeat_every(seconds= 24 * 60 * 60) 
+async def remove_old_files():
+
+    if(env('ENABLE_PRUNER')=='true'):
+        today = date.today()
+        logger.info(f"---------------------------------------Pruner logs for {today}-------------------------------")
+
+        configs: Config=cfg.get_config()
+        
+        for conf in configs.prune_configs:
+
+            logger.info(conf)
+            folder = conf.path
+            days = conf.days_to_live
+
+            path = os.path.join(RESULTS_DIR, folder)
+                        
+            # time.time() returns current time in seconds
+            seconds = time.time() - (days * 24 * 60 * 60)
+
+            # checking whether the file is present in path or not
+            if os.path.exists(path):
+                # iterating over each and every folder and file in the path
+                for root_folder, folders, files in os.walk(path):
+                        # checking folder from the root_folder
+                        for folder in folders:
+                                folder_path = os.path.join(root_folder, folder)
+
+                                if seconds >= get_file_or_folder_age(folder_path):
+                                        remove_folder(folder_path,today)
+
+                        # checking the current directory files
+                        for file in files:
+                                file_path = os.path.join(root_folder, file)
+
+                                if seconds >= get_file_or_folder_age(file_path):
+                                        remove_file(file_path,today)
 
 
 @app.on_event("shutdown")
@@ -100,9 +161,9 @@ async def root():
 async def results(filepath: str):
     p = RESULTS_DIR.joinpath(filepath)
     if not p.is_file():
-        raise fast.HTTPException(
-            status_code = 404,
-            detail = f"{filepath} was not found in results.")
+            raise fast.HTTPException(
+                    status_code = 404,
+                    detail = f"{filepath} was not found in results.")
     return fast.responses.FileResponse(path = p)   
 
 
@@ -119,12 +180,12 @@ async def upload(
     dest.parent.mkdir(parents=True, exist_ok=True)        
 
     async with aiofiles.open(dest, 'wb') as buffer:       
-        async for chunk in request.stream():
-            await buffer.write(chunk)
+           async for chunk in request.stream():
+                    await buffer.write(chunk)
 
     return {
-        'loc': f'{HOST}:{PORT}/{dest.parent.name}/{dest.name}'
-    }    
+           'loc': f'http://{HOST}:{PORT}/index/{dest.parent.name}/'
+        }    
 
 
 app.include_router(

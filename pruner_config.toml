@@ -1,0 +1,5 @@
+pruner = [
+ { path = "folder1 name", days_to_live =  },
+ { path = "folder2 name", days_to_live =  },
+ ....
+]
