@@ -18,6 +18,7 @@ import logging
 import app.db.base as base
 import app.models as mdl
 import app.config as cfg
+from app.config import Config
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = Path('/'.join((ROOT_DIR, 'results')))
@@ -114,13 +115,13 @@ async def remove_old_files():
         today = date.today()
         logger.info(f"---------------------------------------Pruner logs for {today}-------------------------------")
 
-        Cfg: Config=cfg.get_config()
+        configs: Config=cfg.get_config()
         
-        for Conf in Cfg.prune_configs:
+        for conf in configs.prune_configs:
 
-            logger.info(Conf)
-            folder = Conf.path
-            days = Conf.days_to_live
+            logger.info(conf)
+            folder = conf.path
+            days = conf.days_to_live
 
             path = os.path.join(RESULTS_DIR, folder)
                         
