@@ -1,0 +1,17 @@
+[MASTER]
+jobs=0
+ignore-paths=
+
+[MESSAGES CONTROL]
+disable=
+    C0114, # missing-module-docstring
+    C0115, # missing-class-docstring
+    C0116, # missing-function-docstring
+    E1101, # no-member
+    R0402, #consider-using-from-import
+    C0103, #invalid-name
+    E0401, #import-error
+    R1705, #Unnecessary "else" after "return"
+
+[FORMAT]
+max-line-length=110

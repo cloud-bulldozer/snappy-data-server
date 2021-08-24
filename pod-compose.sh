@@ -48,5 +48,3 @@ podman run \
     --volume "$HOME/data_server/results:/data_server/app/app/results:z" \
     --volume "$PWD/pruner_config.toml:/data_server/app/pruner_config.toml:z" \
     $data_server_img
-
-
